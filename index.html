@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Not Boredom</title>
 
-<!-- Retro font for the Retro Arcade theme -->
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 
 <style>
@@ -13,19 +12,26 @@
   html, body { height: 100%; margin: 0; overflow-x: hidden; }
   body {
     font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-    background: linear-gradient(135deg,#000000,#210535,#430d4b,#051427,#7b337d,#c874b2,#f5d5e0,#530f1e,#a44322,#f8bc04,#062c43,#054569,#5591a9,#9ccddc,#ced7e0,#7a27ac,#7844e8,#253fb1,#c33764,#1d2671);
-    background-size: 400% 400%;
-    animation: gradientBG 20s ease infinite;
     color: #fff; text-align: center; position: relative;
     transition: background 600ms ease, color 300ms ease;
   }
+
+  /* Video background */
+  #bgVideo {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+    z-index: -2;
+    display: none; /* hidden by default */
+  }
+  body[data-theme="default"] #bgVideo { display: block; }
+
   @keyframes gradientBG { 0%{background-position:0% 50%;} 50%{background-position:100% 50%;} 100%{background-position:0% 50%;} }
 
   /* Theme variants backgrounds */
   body[data-theme="default"] {
-    background: linear-gradient(135deg,#000000,#210535,#430d4b,#051427,#7b337d,#c874b2,#f5d5e0);
-    background-size: 400% 400%;
-    animation: gradientBG 20s ease infinite;
+    background: none; /* disable gradient when video is active */
   }
   body[data-theme="dark"] { background: radial-gradient(circle at center, #0a0a0a, #1a1a2e, #16213e); animation: none; }
   body[data-theme="light"] { background: linear-gradient(135deg,#e0f7fa,#b2ebf2,#80deea,#4dd0e1,#26c6da); animation: none; }
@@ -36,217 +42,64 @@
   canvas.theme-layer { position: fixed; inset: 0; z-index: -1; pointer-events: none; }
   .hidden { display: none; }
 
-  /* Visibility per theme (only show relevant canvases) */
-  /* Cosmic default */
-  #cosmic-stars, #cosmic-nebula, #cosmic-effects { display: none; }
+  /* Visibility per theme */
   body[data-theme="default"] #cosmic-stars,
   body[data-theme="default"] #cosmic-nebula,
   body[data-theme="default"] #cosmic-effects { display: block; }
 
-  /* Dark nebula */
-  #dark-dust, #dark-pulsar, #dark-arcs { display: none; }
   body[data-theme="dark"] #dark-dust,
   body[data-theme="dark"] #dark-pulsar,
   body[data-theme="dark"] #dark-arcs { display: block; }
 
-  /* Aurora light */
-  #aurora-ribbons, #aurora-sparkles, #aurora-mist { display: none; }
   body[data-theme="light"] #aurora-ribbons,
   body[data-theme="light"] #aurora-sparkles,
   body[data-theme="light"] #aurora-mist { display: block; }
 
-  /* Retro arcade */
-  #retro-grid, #retro-sprites, #retro-overlay { display: none; }
   body[data-theme="retro"] #retro-grid,
   body[data-theme="retro"] #retro-sprites,
-  body[data-theme="retro"] #retro-overlay { display: block; }
+  body[data-theme="retro-overlay { display: block; }
 
-  /* Ocean */
-  #ocean-back, #ocean-caustics, #ocean-life, #ocean-foreground { display: none; }
   body[data-theme="ocean"] #ocean-back,
   body[data-theme="ocean"] #ocean-caustics,
   body[data-theme="ocean"] #ocean-life,
   body[data-theme="ocean"] #ocean-foreground { display: block; }
-  #ocean-back, #ocean-caustics, #ocean-life, #ocean-foreground {
-    filter: saturate(1.05) contrast(1.05);
-  }
-  body[data-theme="ocean"]::after {
-    content:""; position:fixed; inset:0; z-index:-1;
-    box-shadow: inset 0 0 250px rgba(0, 20, 60, 0.6);
-  }
 
-  h1 { font-size:48px; margin:24px 0 8px; font-weight:900; letter-spacing:2px;
-       text-shadow:0 0 12px #fff,0 0 24px #ff00ff,0 0 36px #00ffff; transition: all 300ms ease; }
-
-  .cog { position:fixed; top:15px; right:15px; font-size:24px; cursor:pointer; color:#eee; z-index:10000; }
-  .settings { position:fixed; top:50px; right:15px; background:#222; padding:15px; border-radius:8px;
-              display:none; box-shadow:0 0 10px rgba(0,0,0,0.5); z-index:10000; min-width: 280px; text-align: left; transition: all 300ms ease; }
-  .settings input, .settings select { padding:8px; width:250px; border-radius:5px; border:none; margin-bottom:10px; }
-  .settings p, .settings label { font-size:13px; color:#aaa; margin:0 0 8px; display:block; }
-
-  #searchBar,.primary { width:var(--btn-w); padding:var(--btn-pad); font-size:20px; border-radius:12px; margin:12px auto; display:block; transition: all 250ms ease; }
-  #searchBar { border:2px solid #fff; background:rgba(255,255,255,0.15); color:#fff; outline:none; }
-  #searchBar::placeholder { color:#e8e8e8; }
-  #searchBar:focus { background:rgba(255,255,255,0.25); box-shadow:0 0 0 3px rgba(255,255,255,0.25); }
-
-  .primary { border:none; cursor:pointer; color:#fff; background:linear-gradient(135deg,#24c6dc,#514a9d);
-             box-shadow:0 6px 16px rgba(0,0,0,0.35); transition:transform .15s ease, filter .2s ease, box-shadow 200ms ease; }
-  .primary:hover { transform:translateY(-2px); filter:brightness(1.05); }
-  .primary:active { transform:translateY(0); }
-
-  #buttonContainer { display:flex; flex-direction:column; align-items:center; gap:14px; padding:20px 0 40px; }
-  #buttonContainer button { width:var(--btn-w); padding:var(--btn-pad); font-size:22px; border-radius:12px; border:none; cursor:pointer;
-    color:white; background:linear-gradient(135deg,#ff512f,#dd2476);
-    box-shadow:0 6px 16px rgba(0,0,0,0.35); transition:transform .15s ease, filter .2s ease, box-shadow 200ms ease;
-    display:flex; align-items:center; justify-content:center; gap:8px; }
-  #buttonContainer button:hover { transform:translateY(-2px); filter:brightness(1.05); }
-  #buttonContainer button:active { transform:translateY(0); }
-
-  .fav-star { font-size:22px; cursor:pointer; transition:transform .15s ease; }
-  .fav-star:hover { transform:scale(1.2); }
-
-  #gameArea { width:100%; height:100vh; display:none; position:relative; }
-  #gameFrame { border:none; width:100%; height:100%; }
-  #backBtn { position:absolute; top:10px; left:10px; padding:8px 16px; background:linear-gradient(135deg,#24c6dc,#514a9d);
-    color:#fff; border:none; border-radius:6px; cursor:pointer; z-index:10001; }
-
-  #loginOverlay { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; flex-direction: column;
-    background: rgba(0,0,0,0.85); color: #fff; z-index: 99999; transition: all 300ms ease; }
-  #loginOverlay h2 { font-size: 28px; text-shadow: 0 0 12px #fff,0 0 24px #ff00ff,0 0 36px #00ffff; margin-bottom: 12px; }
-  #loginOverlay input { padding: 10px; border-radius: 6px; border: none; width: 250px; margin: 10px; }
-  #loginOverlay button { padding: 10px 20px; border: none; border-radius: 6px; background: linear-gradient(135deg,#24c6dc,#514a9d);
-    color: #fff; cursor: pointer; box-shadow: 0 6px 16px rgba(0,0,0,0.35); }
-
-  /* Theme-specific UI skins */
-  /* Default Cosmic Gradient */
-  body[data-theme="default"] h1 { color: #fff; text-shadow: 0 0 12px #fff,0 0 24px #ff00ff,0 0 36px #00ffff; }
-  body[data-theme="default"] .primary,
-  body[data-theme="default"] #buttonContainer button {
-    background: linear-gradient(135deg,#24c6dc,#514a9d);
-    color: #fff; box-shadow: 0 6px 16px rgba(0,0,0,0.35);
-  }
-  body[data-theme="default"] #buttonContainer button:hover { box-shadow: 0 0 12px #ff00ff, 0 0 24px #00ffff; }
-
-  /* Dark Nebula */
-  body[data-theme="dark"] h1 { color: #eee; text-shadow: 0 0 12px #444,0 0 24px #888; }
-  body[data-theme="dark"] .primary,
-  body[data-theme="dark"] #buttonContainer button {
-    background: linear-gradient(135deg,#111,#333);
-    color: #eee; box-shadow: 0 6px 16px rgba(0,0,0,0.7);
-  }
-  body[data-theme="dark"] .settings { background: #111; border: 1px solid #444; color: #ccc; }
-  body[data-theme="dark"] #loginOverlay { background: rgba(0,0,0,0.95); color: #ccc; }
-  body[data-theme="dark"] #buttonContainer button:hover { filter: brightness(1.2); text-shadow: 0 0 6px #888; }
-
-  /* Aurora Light */
-  body[data-theme="light"] h1 { color: #222; text-shadow: 0 0 12px #a1ffce,0 0 24px #faffd1; }
-  body[data-theme="light"] .primary,
-  body[data-theme="light"] #buttonContainer button {
-    background: linear-gradient(135deg,#a1ffce,#faffd1);
-    color: #222; box-shadow: 0 6px 16px rgba(0,0,0,0.25); border: 2px solid #a1ffce;
-  }
-  body[data-theme="light"] .settings { background: #fff; border: 1px solid #ccc; color: #222; }
-  body[data-theme="light"] #loginOverlay { background: rgba(255,255,255,0.9); color: #222; }
-
-  /* Retro Arcade */
-  body[data-theme="retro"] h1 {
-    font-family: "Press Start 2P", monospace; text-transform: uppercase;
-    color: #0ff; text-shadow: 0 0 12px #ff0080,0 0 24px #00ffe0;
-  }
-  body[data-theme="retro"] .primary,
-  body[data-theme="retro"] #buttonContainer button {
-    background: linear-gradient(135deg,#ff0080,#00ffe0);
-    color: #fff; font-family: "Press Start 2P", monospace; text-transform: uppercase;
-    box-shadow: 0 0 12px #ff0080, 0 0 24px #00ffe0;
-  }
-  body[data-theme="retro"] .settings {
-    background: #111; border: 2px solid #ff0080; color: #0ff; font-family: "Press Start 2P", monospace;
-  }
-  body[data-theme="retro"] #loginOverlay { background: #000; color: #0ff; font-family: "Press Start 2P", monospace; }
-  body[data-theme="retro"]::before {
-    content:""; position:fixed; inset:0; z-index:-1;
-    background: repeating-linear-gradient(rgba(255,255,255,0.05), rgba(255,255,255,0.05) 2px, transparent 2px, transparent 4px);
-    pointer-events:none;
-  }
-
-  /* Ocean */
-  body[data-theme="ocean"] h1 { color: #cfe9ff; text-shadow: 0 0 12px #39cccc, 0 0 24px #0074d9; }
-  body[data-theme="ocean"] .primary,
-  body[data-theme="ocean"] #buttonContainer button {
-    background: linear-gradient(135deg,#0074d9,#39cccc);
-    color: #e0f7fa; box-shadow: 0 6px 16px rgba(0,50,100,0.5);
-  }
-  body[data-theme="ocean"] .settings { background: rgba(0,40,80,0.9); border: 2px solid #39cccc; color: #cfe9ff; }
-  body[data-theme="ocean"] #loginOverlay { background: rgba(0,40,80,0.95); color: #cfe9ff; }
-
-  /* =========================
-     Messenger (no API) styles
-     ========================= */
-  #chatPanel {
-    max-width: 920px;
-    margin: 24px auto;
-    padding: 14px;
-    border-radius: 12px;
-    background: rgba(0,0,0,0.25);
-    backdrop-filter: blur(8px);
-    box-shadow: 0 6px 24px rgba(0,0,0,0.35);
-  }
-  #chatPanel.hidden { display: none; }
-
-  .chat-row { display: flex; gap: 10px; align-items: center; margin: 8px 0; }
-  .chat-row input, .chat-row textarea, .chat-row select {
-    flex: 1; padding: 10px; border-radius: 8px; border: none;
-  }
-  .chat-row button { padding: 10px 16px; border: none; border-radius: 8px; cursor: pointer; }
-
-  /* Stealth Doc container (mask top chrome) */
-  .doc-container { position: relative; border-radius: 10px; overflow: hidden; }
-  #docFrame { width:100%; height:420px; border:none; display:block; }
-  .doc-mask-top {
-    position: absolute; top: 0; left: 0; right: 0; height: 64px;
-    background: linear-gradient(to bottom, rgba(0,0,0,0.7), rgba(0,0,0,0.0));
-    pointer-events: none;
-  }
-
-  /* Theme variants for messenger */
-  body[data-theme="default"] #chatPanel { background: rgba(30,15,50,0.35); }
-  body[data-theme="dark"]   #chatPanel { background: rgba(10,10,12,0.6); border: 1px solid #333; }
-  body[data-theme="light"]  #chatPanel { background: rgba(255,255,255,0.85); border: 1px solid #a1ffce; color: #222; }
-  body[data-theme="retro"]  #chatPanel { background: rgba(0,0,0,0.75); border: 2px solid #ff0080; color: #0ff; }
-  body[data-theme="retro"]  #chatPanel * { font-family: "Press Start 2P", monospace; text-transform: uppercase; }
-  body[data-theme="ocean"]  #chatPanel { background: rgba(0,40,80,0.65); border: 2px solid #39cccc; color: #cfe9ff; }
+  /* ... keep your existing UI styles here ... */
 </style>
 </head>
-<body>
+<body data-theme="default">
 
-<!-- THEME CANVASES (each theme has its own set) -->
-<!-- Cosmic theme -->
+<!-- Background video (only shows in default theme) -->
+<video id="bgVideo" autoplay muted loop playsinline>
+  <source src="https://player.vimeo.com/external/2421545.sd.mp4?s=3f7f9d3f3f9d3f9d3f9d3f9d3f9d3f9d3f9d3f9d&profile_id=164&oauth2_token_id=57447761" type="video/mp4">
+</video>
+
+<!-- THEME CANVASES -->
 <canvas id="cosmic-stars" class="theme-layer"></canvas>
 <canvas id="cosmic-nebula" class="theme-layer"></canvas>
 <canvas id="cosmic-effects" class="theme-layer"></canvas>
 
-<!-- Dark nebula theme -->
 <canvas id="dark-dust" class="theme-layer"></canvas>
 <canvas id="dark-pulsar" class="theme-layer"></canvas>
 <canvas id="dark-arcs" class="theme-layer"></canvas>
 
-<!-- Aurora light theme -->
 <canvas id="aurora-ribbons" class="theme-layer"></canvas>
 <canvas id="aurora-sparkles" class="theme-layer"></canvas>
 <canvas id="aurora-mist" class="theme-layer"></canvas>
 
-<!-- Retro arcade theme -->
 <canvas id="retro-grid" class="theme-layer"></canvas>
 <canvas id="retro-sprites" class="theme-layer"></canvas>
 <canvas id="retro-overlay" class="theme-layer"></canvas>
 
-<!-- Ocean theme -->
 <canvas id="ocean-back" class="theme-layer"></canvas>
 <canvas id="ocean-caustics" class="theme-layer"></canvas>
 <canvas id="ocean-life" class="theme-layer"></canvas>
 <canvas id="ocean-foreground" class="theme-layer"></canvas>
 
 <h1>Not Boredom</h1>
+
+<!-- keep your cog/settings, search bar, buttons, etc. -->
+
 
 <div class="cog" id="cog">&#9881;</div>
 <div class="settings" id="settingsPanel">
@@ -284,7 +137,276 @@
     <button data-url="https://2048.pages.dev/">   <span class="label">2048</span><span class="fav-star">☆</span> </button>
     <button data-url="https://8ball-pool.pages.dev/file/">   <span class="label">8 Ball Pool</span><span class="fav-star">☆</span> </button>
     <button data-url="https://script.google.com/a/macros/sd215.net/s/AKfycby6NyBKr5sGwJ5lGXSwGEq6DlpfC794H6eMj8ymQmt7T5l8_4Tk9yIXJhwNjzoifKIx/exec">   <span class="label">Abandoned</span><span class="fav-star">☆</span> </button>
-    <!-- ... your long game list continues exactly as-is ... -->
+    <button data-url="https://script.google.com/a/macros/sd215.net/s/AKfycby2JlS7zrXUMn8a63H8TXhROmx6rrUrwjDAIGXeNrfRaoihzYLALwKC7MDq7fuzxWIoCw/exec">   <span class="label">Age Of War</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://script.google.com/a/macros/sd215.net/s/AKfycby-iGW7nI13rNOfHdtQvt2g3ik1HWzcZyr0US6sz_OeR2eN0flkKMyKjvvXVPs49WKE/exec">   <span class="label">Age Of War 2</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://script.google.com/a/macros/sd215.net/s/AKfycb30nrhMSPeJyfgpPQfLsVVhOxjjyErkIsQtoYAzPkRYenYcSBpVyMcOwXy_flMCjFm/exec">   <span class="label">Angry Birds</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://appel.pages.dev/">   <span class="label">Appel</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://archero.pages.dev/play/archero">   <span class="label">Archero</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://storeg223.github.io/g5/class-554/">   <span class="label">Archery World Tour</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://www.coolmathgames.com/sites/default/files/public_games/50719/">   <span class="label">All Flee</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://www.coolmathgames.com/sites/default/files/public_games/43890/">   <span class="label">Magnet Ban</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://www.coolmathgames.com/sites/default/files/public_games/50498/">   <span class="label">Candy Clicker</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://script.google.com/a/macros/sd215.net/s/AKfycbMc9YDautmU6ZzhHR7yvfWrxnr0pQ1FedN8zNOhluXnNGb0z9xq_igcdD5kLhwVJO4/exec">   <span class="label">Armed With Wings</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://script.google.com/a/macros/sd215.net/s/AKfycbzOCei0UaoJR3ZC-Ucj79IuKdp3mAz-ncOk9dMGnenhnpjTzB6lh2rjOrwM5JX5cPuYGQ/exec">   <span class="label">Armed With Wings 2</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://www.coolmathgames.com/sites/default/files/public_games/41808/?gd_sdk_referrer_url=https://www.coolmathgames.com/0-atari-breakout">   <span class="label">Atari Breakout</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://script.google.com/a/macros/sd215.net/s/AKfycbmevkeavNOsB5HAuBlRXCr11dpWboVy58LIy4v_Np9hzx4NgD3Os9Uow5yrKylc2uu/exec">   <span class="label">Awesome Tanks</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://script.google.com/a/macros/sd215.net/s/AKfycbyJgJSpZLYW4t7SEW5VCiR5pQyGtXlTSYP4ohz57LkTI3RFdVJNQEnLihXgleCe9wtudQ/exec">   <span class="label">Awesome Tank 2</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://script.google.com/a/macros/sd215.net/s/AKfycbxoz2PvUkWpxsV1-0iMn7pwzQ060snqkpynoRNjZ1e6i26bjYW1-qyS-gOoiIVVxeo/exec">   <span class="label">Bad Piggies</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://www.coolmathgames.com/sites/default/files/public_games/49889/">   <span class="label">Boba Simulator</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://bobzgames.github.io/GBA/">   <span class="label">Gba Games</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://bombparty-clone.fly.dev/">   <span class="label">Bombparty</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://storeg223.github.io/g68/class-1064/">   <span class="label">Boost Buddies</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://script.google.com/a/macros/sd215.net/s/AKfycbxf0tR2BsCY9bo5fVO8a79a9AICjRwbnYEKLZ9VvPSL3mD_RqHd2kVBhiYZOtPShg2Gew/exec">   <span class="label">Bow Master</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://storeg223.github.io/g177/class-334/">   <span class="label">Bacon May Die</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://incrediblewebsite.github.io/sans/">   <span class="label">Bad Times Simulator (Sans Fight)</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://basketbros.pages.dev/">   <span class="label">Basket Bros</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://basket-random.pages.dev/">   <span class="label">Basket Random</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://storeg223.github.io/g26/class-539/">   <span class="label">Big Tall Small</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://www.coolmathgames.com/sites/default/files/public_games/25026/">   <span class="label">Big Tower Tiny Square</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://block-blast.pages.dev/">   <span class="label">Block Blast</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://script.google.com/a/macros/sd215.net/s/AKfycbylDbqCzimuW6A1JUkKt8EayWdCstoWeOztkVYUXfP8Hq4CGURaqyYbfWmoID7ZlpWKA/exec">   <span class="label">Bloons Super Monkey</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://script.google.com/a/macros/sd215.net/s/AKfycbwXAfTxL6K-vmAEnhCkQQa3hpBPf8aVkH8DEqWcdfXAlCUh0YGniwSho5VQOzDelUr3/exec">   <span class="label">Bloxorz</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://storeg223.github.io/g16/class-413/">   <span class="label">Blumgi Rocket</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://script.google.com/a/macros/sd215.net/s/AKfycbzcqtSozdkUS3cVU0jfCcHcfwTlBIw40vC8dF8khMP1lSrkrBSc8mpvi8u0X6g7ntvhQ/exec">   <span class="label">Bob The Robber</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://script.google.com/a/macros/sd215.net/s/AKfycbwT5Vd9N-AHqqhifEQ_a_NLjIlYz15m3tNpRzzDO11AaXeJ9chBc0FskXB2SKMQIM49/exec">   <span class="label">Bob The Robber 5</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://script.google.com/a/macros/sd215.net/s/AKfycbwMYKzQ6gSINJLuMrA4-mwPsrGtYaI6MPzQCISHKOtoBa15-mNL_vkQZQHcbYUVIgxF/exec">   <span class="label">Boxel Rebound</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://storeg223.github.io/g16/class-422/">   <span class="label">Brain Test</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://www.coolmathgames.com/sites/default/files/public_games/48389/">   <span class="label">Braininess</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://btd3.pages.dev/">   <span class="label">Btd 3</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://btd5.pages.dev/">   <span class="label">Btd 5</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://script.google.com/a/macros/sd215.net/s/AKfycbzYNoh6yqG6eu3SMGFRLwHI1B6R79jADni5_zTz5G0IYuwqo2WbU0N9hiYUkXKS8Zh1/exec">   <span class="label">Bunny Land</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://storeg223.github.io/g97/class-518/">   <span class="label">Burrito Bison</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://script.google.com/a/macros/sd215.net/s/AKfycbzQTx2iYEacv65AXzQtwQfo_IJjCWxNMlPlGC6Jrn8_JjT9jgozigOP8IhrXkTelccQcQ/exec">   <span class="label">Candy Crush</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://script.google.com/a/macros/sd215.net/s/AKfycbxUyV2R8KeizijE1KJA99T-MSJpFxtk4wH0dl5hqfKUecaef2IafsJyPhvdzzKjyIxDjA/exec">   <span class="label">Cat Mario</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://storeg223.github.io/g97/class-524/">   <span class="label">Champion Islands</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://www.mathsisfun.com/games/chess.html">   <span class="label">Chess</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://www.coolmathgames.com/sites/default/files/public_games/49858/">   <span class="label">Clicker Heroes</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://www.coolmathgames.com/sites/default/files/public_games/49390/">   <span class="label">Collapstle</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://storeg223.github.io/g26/class-521/">   <span class="label">Color Switch</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://script.google.com/a/macros/sd215.net/s/AKfycbz3ztPjvS8Uf1oP2PlGFrmmOgdgA4rgB5J90piAzCihFooBHtyo8LkMstiQghy5wo9Z/exec">   <span class="label">Crash Bandicoot</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://script.google.com/a/macros/sd215.net/s/AKfycbzb6gis7lW3NzNhKtIj0z-QkksOggWpIGJnlj67wMNhnV-iXaY785UlyiagxBYUBPybUA/exec">   <span class="label">Creative Kill Chamber 2</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://vaz63.github.io/g20/class-402/">   <span class="label">Crossy Road</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://cuttherope.pages.dev/">   <span class="label">Cut The Rope</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://incrediblewebsite.github.io/shapezio/">   <span class="label">Shapez.io</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://storeg223.github.io/g7/class-90/">   <span class="label">Daddy Long Legs</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://script.google.com/a/macros/sd215.net/s/AKfycbzwUaDK8U6_bsC7-FFYI_iLh1tHHWcrCcmAfYgw1_6rrvoJdNQFzEr_VtTbQJEr3ZIYFA/exec">   <span class="label">Doodle God</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://doodlejump.pages.dev/">   <span class="label">Doodle Jump</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://script.google.com/a/macros/sd215.net/s/AKfycbyxLM58t1oGIyqp09GNTAGBqUBaFg7A9nY5LlLwS45Zg2z63ax0EmnhHCXW_aHhEpdFcqg/exec">   <span class="label">Doom</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://script.google.com/a/macros/sd215.net/s/AKfycbx61mSm2aEx_wwEQB66hIGUZm8hV2dBZvo2QXcabpXvc0r25c22pW-pdE8tmxBjOWcWCw/exec">   <span class="label">Doom 2</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://script.google.com/a/macros/sd215.net/s/AKfycbzzQ-KS89sAq_85ymMiWnz7_Piw_GDPiB20u_ZyXOgWUgO432XOvvXN-2DZB6MgWaxU/exec">   <span class="label">Doom 2D</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://driftboss.pages.dev/">   <span class="label">Drift Boss</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://drivemad2.pages.dev/">   <span class="label">Drive Mad</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://www.coolmathgames.com/sites/default/files/public_games/50916/">   <span class="label">Duck Duck Clicker</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://www.coolmathgames.com/sites/default/files/public_games/52475/">   <span class="label">Duck Duck Clicker 3D</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://ducklife1.pages.dev/">   <span class="label">DuckLife</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://ducklife2.pages.dev/">   <span class="label">DuckLife 2</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://ducklife3.pages.dev/">   <span class="label">Ducklife 3</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://ducklife4.pages.dev/">   <span class="label">DuckLife 4</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://www.coolmathgames.com/sites/default/files/public_games/50081/">   <span class="label">Eggy Car</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://gameboyadvanced.pages.dev/">   <span class="label">Game Stash</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://storeg223.github.io/g26/class-502/">   <span class="label">Deepest Sword</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://chrome-dino-game.github.io/">   <span class="label">Chrome Dino</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://fancypants.pages.dev/">   <span class="label">Fancy Pants</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://storeg223.github.io/g68/class-1012/">   <span class="label">Fantasy Merger</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://fishingfrenzy.co/login">   <span class="label">Fishing Frenzy</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://storeg223.github.io/g177/class-339/">   <span class="label">Fox Simulator</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://script.google.com/a/macros/sd215.net/s/AKfycbzglu7bAlCzkY1f7zPl84CsM0ddysxenJzVGRnNn-w3Lt1mQJNIiXViOwdO5Q4M4ztL/exec">   <span class="label">Free Rider 3</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://fridaynightfunkinweek7.github.io/">   <span class="label">Friday Night Funkin</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://fruitninja.pages.dev/">   <span class="label">Fruit Ninja</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://funny-shooter.iwhy.dev/v1/index.html">   <span class="label">Funny Shooter</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://funny-shooter.iwhy.dev/v2/index.html">   <span class="label">Funny Shooter 2</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://geometry-dash.pages.dev/">   <span class="label">Geometry Dash</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://ubg44.github.io/GetawayShootout/">   <span class="label">Getaway Shootout</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://geography-lessons.github.io/Vafor_IT/hole.io/">   <span class="label">Hole.io</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://house-of-hazards.pages.dev/">   <span class="label">House Of Hazards</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://bigicetowertinysquare.pages.dev/">   <span class="label">Big Ice Tower Tiny Square</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://storeg223.github.io/g72/class-631/">   <span class="label">Idle Ants</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://password-game.pages.dev/">   <span class="label">Password Game</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://incredibox.pages.dev/">   <span class="label">Incredibox</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://script.google.com/a/macros/sd215.net/s/AKfycbxMgRYs-DIiLFFGcb5Na--A05LmPWgUsEJ8jwAYxhJGTBzv9rKLZNJ6S58t6qS26Kld/exec">   <span class="label">Jelly Mario</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://www.coolmathgames.com/sites/default/files/public_games/53996/">   <span class="label">Jelly Truck</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://www.coolmathgames.com/sites/default/files/public_games/49742/">   <span class="label">Johhny Upgrade</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://storeg223.github.io/g72/class-638/">   <span class="label">Jumping Shells</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://archero.pages.dev/play/just-tanks">   <span class="label">Just Tanks</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://bobzgames.github.io/GBA/launcher.html#khcom">   <span class="label">Kingdom Hearts Chain Of Memories</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://bobzgames.github.io/GBA/launcher.html#kirbymirror">   <span class="label">Kirby & The Amazing Mirror</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://learntofly.pages.dev/">   <span class="label">Learn To Fly Idle</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://learntofly2.pages.dev/">   <span class="label">Learn To Fly 2</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://script.google.com/a/macros/sd215.net/s/AKfycbxp_1sb3zCrL5Na_1tGvx_AnBoSj6wiMPLIiQHHtaReHRblntFMVYb4YBnFyhowLIX94A/exec">   <span class="label">Free Rider</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://storeg223.github.io/g22/class-356/">   <span class="label">Level Devil</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://mca1.pages.dev/">   <span class="label">Magic Cat Academy</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://mca2.pages.dev/">   <span class="label">Magic Cat Academy 2</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://mca3.pages.dev/">   <span class="label">Magic Cat Academy 3</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://script.google.com/a/macros/sd215.net/s/AKfycbwcME7Zjq471xlcGPWLVBaU2pVk9PNpWsAlFxoTfpX-5C7lcqPIyQlFoLNkuCxqIgw62w/exec">   <span class="label">Mario Kart</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://script.google.com/a/macros/sd215.net/s/AKfycbygjC3zfZtvLnkZSdN0ZYEX2u1ZGEKeW6fP2y2SC0cJBvYVq7f_wZGbgbrFaq0iUhcNsA/exec">   <span class="label">Melon Sandbox</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://storeg223.github.io/g77/class-829/">   <span class="label">Monkey Mart</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://mine-sweeper.pages.dev/">   <span class="label">Minesweeper</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://moto-x3m.pages.dev/">   <span class="label">Moto X3m</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://moto-x3m-2.pages.dev/">   <span class="label">Moto X3m 2</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://storeg223.github.io/g72/class-580/">   <span class="label">Murder</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://script.google.com/a/macros/sd215.net/s/AKfycbyrD6eAAeG8uwUWVUyzAEk0oAHDWQZz0SW9hxUplVfcurspNtWSeoivayJW2ifs4lRj/exec">   <span class="label">Neon Blaster</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://archero.pages.dev/play/battle-starr">   <span class="label">Old Brawl Stars</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://incrediblewebsite.github.io/onionfist/orbitaldaggers/">   <span class="label">Orbital Daggers</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://papas-burgeria.pages.dev/">   <span class="label">papa's burgeria</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://papas-cheeseria.pages.dev/">   <span class="label">Papa's Cheeseria</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://papas-freezeria.pages.dev/">   <span class="label">Papa's Freezeria</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://papas-pastaria.pages.dev/">   <span class="label">Papa's Pastaria</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://papas-pizzeria.pages.dev/">   <span class="label">Papa's Pizzeria</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://penalty-kick.pages.dev/">   <span class="label">Penalty Kick</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://storeg223.github.io/g/class-505/">   <span class="label">Paper.io 2</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://planetclicker.pages.dev/">   <span class="label">Planet Clicker</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://www.mtchs.org/wp-uploads/StudentWork/ClickerGame/">   <span class="label">Pokemon Clicker</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://bobzgames.github.io/emerald.html">   <span class="label">Pokemon Emerald</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://bobzgames.github.io/redd.html">   <span class="label">Pokemon Fire Red</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://script.google.com/a/macros/sd215.net/s/AKfycbx3Ik2rJinPaZPdPczhX6D3KmzbYK617nmfdBRFSd8QjREPYGea7gLC86qyM1RHpPlgtw/exec">   <span class="label">Pokemon Great Defense 2</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://script.google.com/a/macros/sd215.net/s/AKfycbxWYXzXN3TRwxELxgrTkjmE5hyqPMgzdNn6clWSzVcU-m0m9MDdHHb-VP-VDnz06vNe/exec">   <span class="label">Pokemon Leaf Green</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://script.google.com/a/macros/sd215.net/s/AKfycbydeGJlDAWwZCE5PY08zOOmx37ItizsHHLSxDEwAEOsGgT7n9rqb4V1Anelns4sezU6/exec">   <span class="label">Pokemon Emerald</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://pokemonredgb.netlify.app/">   <span class="label">Pokemon Red</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://gameboyadvanced.pages.dev/emulator/gb/yellow">   <span class="label">Pokemon Yellow</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://script.google.com/a/macros/sd215.net/s/AKfycbypOitjGD19RPkCYQ8vgJzFfmtMtnl3naBwSw9OhpqtalZs0k3Pri3nL7X76qUwdV9GGQ/exec">   <span class="label">Pokemon
+    Ruby</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://bobzgames.github.io/sapphire.html">   <span class="label">Pokemon Saphire</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://script.google.com/macros/s/AKfycbx_-xD1Y9hG-1k_8ibsBhrWHUFud7t58ARoyOcKup3bFvo5nIYQxO-lIlcZpALmSEx5Hg/exec">   <span class="label">Pokemon Ultimate Fusion</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://plantsvszombies.pages.dev/">   <span class="label">Plants Vs Zombies</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://storeg223.github.io/g66/class-928/">   <span class="label">Quivershot</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://www.coolmathgames.com/sites/default/files/public_games/24719/">   <span class="label">Rabbit Samurai</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://script.google.com/a/macros/sd215.net/s/AKfycbwo7v4c7mUQXUD0M_R6xeZGSdprXIEv1NJ0Gu02isAt6N8pXQv14Shxw7aZKMld62iq/exec">   <span class="label">Red Ball 4 Vol 2</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://amhooman.github.io/website/games/ralsei%20throw/">   <span class="label">Undertale Ralsei Throw</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://amhooman.github.io/website/games/undyne/">   <span class="label">Undertale Undyne</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://amhooman.github.io/website/games/edgesurf/">   <span class="label">Microsoft Surf</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://ragdollarchers.pages.dev/">   <span class="label">Ragdoll Archers</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://freetoplayz.github.io/ragdoll-hit/">   <span class="label">Ragdoll Hit</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://riddle-school.github.io/file/">   <span class="label">Riddle School</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://choppy-orc.github.io/file/riddle-school-2/index.html">   <span class="label">Riddle School 2</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://driveaheadplay.com/drive/rider/">   <span class="label">Rider</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://rooftopsnipers.pages.dev/">   <span class="label">Rooftop Snipers</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://storeg223.github.io/g2/class-424/">   <span class="label">Rooftop Snipers 2</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://www.coolmathgames.com/sites/default/files/public_games/49436/">   <span class="label">Run 3</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://pkgames.org/rodeo-stampede/index.html">   <span class="label">Rodeo Stampede</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://pkgames.org/my-perfect-hotel/index.html">   <span class="label">My Perfect Hotel</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://thereisnogame.pages.dev/">   <span class="label">There Is No Game</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://storeg223.github.io/g68/class-1071/">   <span class="label">Toxic</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://slope-phi.vercel.app/">   <span class="label">Slope</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://tunnelrush2.pages.dev/">   <span class="label">Tunnel Rush 2</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://snakeunblocked.github.io/file/">   <span class="label"> Google Snake</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://www.coolmathgames.com/sites/default/files/public_games/53637/">   <span class="label">Watermelon Suika</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://sprunk-server.99kkaiba.workers.dev/index.html">   <span class="label">Sprunki</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://worldguessr.pages.dev/">   <span class="label">Worldguessr</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://tileshop.pages.dev/">   <span class="label">Tiles Hop</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://storeg223.github.io/g22/class-379/">   <span class="label">Shady Bears</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://storeg223.github.io/g26/class-438/">   <span class="label">Tomb Of The Mask</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://www.coolmathgames.com/sites/default/files/public_games/49339/">   <span class="label">Slice Master</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://webgltest-17af1.firebaseapp.com/">   <span class="label">Smash Karts</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://vex6.pages.dev/">   <span class="label">Vex 6</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://tinysubversions.com/game/spelunky/game.html">   <span class="label">Spelunky</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://happyingame12.life/">   <span class="label">Weird Games</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://pkgames.org/stickman-parkour-3/index.html">   <span class="label">Stickman Parkour</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://script.google.com/a/macros/sd215.net/s/AKfycbzrzH3F40_t7GSh9M-o6VzOYpFfCj2JG4N0dqqcZSAuARN-p_kF8xDDoCrU8bd-XZxA/exec">   <span class="label">Super Mario Bros 3</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://storeg223.github.io/g68/class-1038/">   <span class="label">Swingers</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://storeg223.github.io/g2/class-415/">   <span class="label">Sausage Flip</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://www.coolmathgames.com/sites/default/files/public_games/52971/">   <span class="label">Tiny Fishing</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://sketch.io/sketchpad/">   <span class="label">Sketchpad</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://script.google.com/a/macros/sd215.net/s/AKfycbzYxoDtJlHnwLSCRfkULVObzWVcVt6mRGFasx5mN88MowP4_mS-1lSUCjbzASFhF30u/exec">   <span class="label">Tube Jumpers</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://pkgames.org/smash-it/index.html">   <span class="label">Smash It</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://vex3.pages.dev/">   <span class="label">Vex 3</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://nealfun.app/game/speed-stars/">   <span class="label">Speed Stars</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://orb.farm/">   <span class="label">Orb Farm Sandbox</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://stickmanhook.pages.dev/">   <span class="label">Stickman Hook</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://mathadventure1.github.io/sm64/sm64/index.html">   <span class="label">Super Mario 64</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://script.google.com/a/macros/sd215.net/s/AKfycbwSChHrprN7EV_1tBZU8Mi2KGB4uJX4PQOEf7xpPfo_iCvuojtCu7s0Mp8oRZJRPzZ7Og/exec">   <span class="label">Super Smash Flash</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://thisissand.com/">   <span class="label">Draw With Sand</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://timeshooter3.pages.dev/timeshootor3/">   <span class="label">Time Shooter 3</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://emulatoros.github.io/gfile/sketchbook/">   <span class="label">Sketch Book 0.4</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://slope2.pages.dev/">   <span class="label">Slope 2</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://itsvijaysingh.github.io/Snow-Rider3D/">   <span class="label">Snow Rider 3D</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://playgames.pages.dev/">   <span class="label">Retro Games</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://script.google.com/a/macros/sd215.net/s/AKfycbyeS0KMc5hv54TcVBgAh-bExO1c_itGoG-Mv93cqBA75fEBVG7_P1aydWFGD8Dpqgp46g/exec">   <span class="label">Stick Archers</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://script.google.com/a/macros/sd215.net/s/AKfycbx88tZ42kElQx0zgLz43Yg0t6dSWzt5orHxO2NnPXcV2cJ-ZQSKzdAeuoEDjHufzXJF_Q/exec">   <span class="label">Super Mario 64 Sunshine</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://script.google.com/a/macros/sd215.net/s/AKfycbx-20sK1Vv2W5l1l4NnyzA67dCLHiWUNOnwlGioOx9yKXkauoZt5H7l6il14wlLS9hI4A/exec">   <span class="label">Battle Simulator</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://storeg223.github.io/g68/class-1110/">   <span class="label">Shapes</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://www.coolmathgames.com/sites/default/files/public_games/36855/">   <span class="label">Big Flappy Tower Tiny Square</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://incrediblewebsite.github.io/onionfist/icedodo/">   <span class="label">Ice Dodo</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://incrediblewebsite.github.io/onionfist/tunnelglider/">   <span class="label">Tunnel Glider</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://incrediblewebsite.github.io/onionfist/onionsrevenge/">   <span class="label">Onions Revenge</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://incrediblewebsite.github.io/edgenotfound/">   <span class="label">Edge Not Found</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://incrediblewebsite.github.io/q1k3/">   <span class="label">Q1KE</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://incrediblewebsite.github.io/quake/">   <span class="label">Quake</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://incrediblewebsite.github.io/spacehuggers/">   <span class="label">Space Huggers</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://incrediblewebsite.github.io/asteroids/">   <span class="label">Asteroids</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://incrediblewebsite.github.io/evilglitch/">   <span class="label">Evil Glitch</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://incrediblewebsite.github.io/blackholesquare/">   <span class="label">Black Hole Square</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://incrediblewebsite.github.io/packabunchas/">   <span class="label">Packa Bunches</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://incrediblewebsite.github.io/calamity/">   <span class="label">Calamity</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://incrediblewebsite.github.io/xx142-b2exe/">   <span class="label">xx142-b2exe</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://incrediblewebsite.github.io/konnekt/">   <span class="label">Konnekt</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://incrediblewebsite.github.io/roadblocks/">   <span class="label">Road Blocks</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://incrediblewebsite.github.io/bitburner/">   <span class="label">Bit Burner</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://incrediblewebsite.github.io/untrusted/">   <span class="label">Untrusted</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://incrediblewebsite.github.io/logicsim/">   <span class="label">Logicsim</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://incrediblewebsite.github.io/bitcoingame/">   <span class="label">Bitcoin Game</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://incrediblewebsite.github.io/adarkroom/">   <span class="label">A Dark Room</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://incrediblewebsite.github.io/trimps/">   <span class="label">Trimps</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://incrediblewebsite.github.io/spacecompany/">   <span class="label">Space Company</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://incrediblewebsite.github.io/celeste/">   <span class="label">Celeste</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://incrediblewebsite.github.io/celeste2/">   <span class="label">Celeste 2</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://incrediblewebsite.github.io/fbwg/">   <span class="label">Fireboy & Watergirl</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://incrediblewebsite.github.io/fbwg2/">   <span class="label">Fireboy & Watergirl 2</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://incrediblewebsite.github.io/fbwg3/">   <span class="label">Fireboy & Watergirl 3</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://incrediblewebsite.github.io/fbwg4/">   <span class="label">Fireboy & Watergirl 4</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://incrediblewebsite.github.io/dancingline/">   <span class="label">Dancing Line</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://incrediblewebsite.github.io/skyball/">   <span class="label">Rolling Skyball</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://incrediblewebsite.github.io/ctrvivid/">   <span class="label">Cut The Rope Vivid</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://incrediblewebsite.github.io/ctrtimetravel/">   <span class="label">Cut The Rope Time Travel</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://incrediblewebsite.github.io/starling/">   <span class="label">Starling</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://incrediblewebsite.github.io/noleglenny/">   <span class="label">No Leg Lenny</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://incrediblewebsite.github.io/had/">   <span class="label">Had</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://incrediblewebsite.github.io/astray/">   <span class="label">Astray</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://incrediblewebsite.github.io/backcountry/">   <span class="label">Back Country</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://incrediblewebsite.github.io/bounceback/">   <span class="label">Bounce Back</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://incrediblewebsite.github.io/captaincallisto/">   <span class="label">Captain Callisto</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://incrediblewebsite.github.io/ninjavsevilcorp/">   <span class="label">Ninja Vs Evil Corp</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://incrediblewebsite.github.io/towermaster/">   <span class="label">Tower Buildings</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://incrediblewebsite.github.io/agariominigame/">   <span class="label">Agar.io Clone</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://incrediblewebsite.github.io/rollingforests">   <span class="label">Rolling Forests</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://geography-lessons.github.io/Vafor_IT/tanuki-sunset/">   <span class="label">Tanuki Sunset</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://geography-lessons.github.io/Vafor_IT/pixellyballs/">   <span class="label">Pixel Speedrun</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://geography-lessons.github.io/Vafor_IT/mcm-files/index.html">   <span class="label">Madalin Stunt Cars 2</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://www.coolmathgames.com/sites/default/files/public_games/43495/">   <span class="label">Grindcraft</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://mountjustin.github.io/zstumbleguys.html">   <span class="label">Stumble Guys</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://mountjustin.github.io/thisistheonlylevel.html">   <span class="label">This Is The Only Level</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://geography-lessons.github.io/Vafor_IT/bitlife/">   <span class="label">Bit Life</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://unblockedgames200.github.io/Games5/jetpack-joyride/">   <span class="label">Jetpack Joyride</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://geography-lessons.github.io/Vafor_IT/polytrack/">   <span class="label">Poly Track</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://geography-lessons.github.io/Vafor_IT/7a9b3c4e2f6d1e8c5a2f4b7d9e3c0a6f/">   <span class="label">Giraffe Volleyball</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://eaglercraftz.pages.dev/javascript/builds/0.0.8/">   <span class="label">Minecraft/Eaglecraft</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://www.coolmathgames.com/sites/default/files/public_games/23365/">   <span class="label">Last Horizen</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://geography-lessons.github.io/Vafor_IT/bottleflippingdiedin20126/">   <span class="label">Bottle Flip 3D</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://geography-lessons.github.io/Vafor_IT/snowballio/">   <span class="label">Snowball.io</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://geography-lessons.github.io/Vafor_IT/sanstrike.io/?room=574&region=us">   <span class="label">Sandstrike.io</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://geography-lessons.github.io/Vafor_IT/doge/">   <span class="label">Doge Miner</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://geography-lessons.github.io/Vafor_IT/stack/">   <span class="label">Stack</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://geography-lessons.github.io/Vafor_IT/worlds-hardest-game-2/index.html">   <span class="label">Worlds Hardest Game 2</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://unblockedgames200.github.io/games/Flash.html?game=/games/swf/riddd3.swf">   <span class="label">Riddle School 3</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://unblockedgames200.github.io/games/Flash.html?game=/games/swf/riddd4.swf">   <span class="label">Riddle School 4</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://unblockedgames200.github.io/games/Flash.html?game=/games/swf/riddd5.swf">   <span class="label">Riddle School 5</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://unblockedgames200.github.io/games/Flash.html?game=/games/swf/riddd6.swf">   <span class="label">Riddle Transfer Year 6</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://unblockedgames200.github.io/games/Flash.html?game=/games/swf/riddd7.swf">   <span class="label">Riddle Transfer Year 7</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://unblockedgames200.github.io/Games9/archer-hero/unblocked">   <span class="label">Archero</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://quiz-25.app/test.html?id=92">   <span class="label">Tower Of Destiny</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://quiz-25.app/test.html?id=97">   <span class="label">Henry Stickman Stealing the diamond</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://quiz-25.app/test.html?id=96">   <span class="label"> Henry Stickman Infiltrating the airship</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://quiz-25.app/test.html?id=95">   <span class="label">Henry Stickman Fleeing the Complex</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://quiz-25.app/test.html?id=94">   <span class="label">Henry Stickman Breaking The Bank</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://quiz-25.app/test.html?id=93">   <span class="label">Henry Stickman</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://quiz-25.app/test.html?id=98">   <span class="label">Bounce Masters</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://quiz-25.app/test.html?id=99">   <span class="label">Bow Masters</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://quiz-25.app/test.html?id=87">   <span class="label">Bob The Robber 4</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://quiz-25.app/test.html?id=86">   <span class="label">Bob The Robber 3</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://quiz-25.app/test.html?id=85">   <span class="label">Bob The Robber 2</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://quiz-25.app/test.html?id=84">   <span class="label">Bob The Robber</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://quiz-25.app/test.html?id=6">   <span class="label">Agar.io</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://purepro4573.github.io/yohoho/">   <span class="label">Yohoho.io</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://unblockedgames200.github.io/Games5/angry-sharks/">   <span class="label">Angry Sharks</span><span class="fav-star">☆</span> </button>
     <button data-url="https://unblockedgames200.github.io/Games5/HexGL-master/">   <span class="label">Hex Gl</span><span class="fav-star">☆</span> </button>
     <button data-url="https://unblockedgames200.github.io/Games5/ctr-holiday/">   <span class="label">Cut The Rope 2</span><span class="fav-star">☆</span> </button>
     <button data-url="https://unblockedgames200.github.io/Games6/dragon-vs-bricks/">   <span class="label">Dragon Vs Bricks</span><span class="fav-star">☆</span> </button>
@@ -302,51 +424,11 @@
   <iframe id="gameFrame" allow="fullscreen" allowfullscreen></iframe>
 </div>
 
-<!-- Gmail allowlist overlay (existing) -->
 <div id="loginOverlay">
   <h2>Please enter your Gmail to continue</h2>
   <input id="gmailInput" type="email" placeholder="yourname@gmail.com">
   <button id="loginBtn">Sign In</button>
   <p>Only approved Gmail accounts can access this launcher.</p>
-</div>
-
-<!-- ============== -->
-<!-- Messenger panel -->
-<!-- ============== -->
-<div id="chatPanel" class="hidden">
-  <h3>Messenger</h3>
-
-  <div class="chat-row">
-    <input id="usernameSpot" readonly placeholder="Signed in as ...">
-    <button id="clearChatsBtn" class="primary" title="Remove saved chats">Clear Chats</button>
-  </div>
-
-  <!-- Friend chat (paste private Doc edit URL) -->
-  <div class="chat-row">
-    <input id="friendDocInput" placeholder="Paste friend's Google Doc edit URL">
-    <button id="addFriendBtn" class="primary">Add Friend Chat</button>
-  </div>
-
-  <!-- Group chat (paste shared Doc edit URL) -->
-  <div class="chat-row">
-    <input id="groupNameInput" placeholder="Group name">
-    <input id="groupDocInput" placeholder="Paste group Google Doc edit URL">
-    <button id="createGroupBtn" class="primary">Add Group Chat</button>
-  </div>
-
-  <!-- Chat selector and controls -->
-  <div class="chat-row">
-    <label for="chatSelector">Select chat:</label>
-    <select id="chatSelector"></select>
-    <button id="openDocBtn" class="primary" title="Open Google Doc in new tab">Open Doc</button>
-    <button id="removeChatBtn" class="primary" title="Remove selected chat">Remove</button>
-  </div>
-
-  <!-- Stealth embed with top chrome mask -->
-  <div class="doc-container">
-    <iframe id="docFrame"></iframe>
-    <div class="doc-mask-top"></div>
-  </div>
 </div>
 
 <script>
@@ -358,8 +440,6 @@
       localStorage.setItem("authorizedUser", email);
       document.getElementById("loginOverlay").style.display = "none";
       alert("Access granted! Welcome " + email);
-      // Show messenger
-      initMessengerUI(email);
     } else {
       alert("Access denied. Gmail not authorized.");
     }
@@ -371,8 +451,6 @@
     const savedUser = localStorage.getItem("authorizedUser");
     if (savedUser && allowedUsers.includes(savedUser.toLowerCase())) {
       document.getElementById("loginOverlay").style.display = "none";
-      // Show messenger
-      initMessengerUI(savedUser);
     }
 
     initLauncher();
@@ -601,8 +679,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  ["favoritesDropdown", "recentDropdown"].forEach(id => {
-    const dropdown = document.getElementById(id);
+  [favoritesDropdown, recentDropdown].forEach(dropdown => {
     dropdown.addEventListener("change", () => {
       if (dropdown.value) {
         window.open(dropdown.value, "_blank");
@@ -1438,148 +1515,6 @@ document.addEventListener("DOMContentLoaded", () => {
     Object.values(oceanLayers).forEach(L=> L && L.ctx.clearRect(0,0,L.c.width,L.c.height));
   }
 })();
-</script>
-
-<!-- ============================== -->
-<!-- Messenger logic (no Google API) -->
-<!-- ============================== -->
-<script>
-  // Initialize messenger when authorized
-  function initMessengerUI(email) {
-    const panel = document.getElementById("chatPanel");
-    const usernameSpot = document.getElementById("usernameSpot");
-    const chatSelector = document.getElementById("chatSelector");
-    const friendDocInput = document.getElementById("friendDocInput");
-    const addFriendBtn = document.getElementById("addFriendBtn");
-    const groupNameInput = document.getElementById("groupNameInput");
-    const groupDocInput = document.getElementById("groupDocInput");
-    const createGroupBtn = document.getElementById("createGroupBtn");
-    const openDocBtn = document.getElementById("openDocBtn");
-    const removeChatBtn = document.getElementById("removeChatBtn");
-    const clearChatsBtn = document.getElementById("clearChatsBtn");
-    const docFrame = document.getElementById("docFrame");
-
-    // State
-    let chats = JSON.parse(localStorage.getItem("nb_chats") || "[]"); // {name,url,type}
-
-    // Show panel and populate username
-    panel.classList.remove("hidden");
-    usernameSpot.value = email;
-
-    // Helpers
-    function saveChats() {
-      localStorage.setItem("nb_chats", JSON.stringify(chats));
-    }
-    function rebuildSelector() {
-      chatSelector.innerHTML = "";
-      chats.forEach(c => {
-        const opt = document.createElement("option");
-        opt.value = c.url;
-        opt.textContent = c.name;
-        chatSelector.appendChild(opt);
-      });
-      // Restore selection
-      const last = localStorage.getItem("nb_lastChatUrl");
-      if (last) {
-        const idx = [...chatSelector.options].findIndex(o => o.value === last);
-        if (idx >= 0) chatSelector.selectedIndex = idx;
-        if (docFrame && last) docFrame.src = last;
-      }
-    }
-    function addChat(name, url, type="friend") {
-      // Normalize Doc URL (prefer edit URL)
-      const normalized = normalizeDocUrl(url);
-      if (!normalized) return;
-      // Dedup by doc id
-      const id = extractDocId(normalized);
-      if (id && chats.find(c => extractDocId(c.url) === id)) return;
-      chats.push({ name, url: normalized, type });
-      saveChats(); rebuildSelector();
-      chatSelector.value = normalized;
-      localStorage.setItem("nb_lastChatUrl", normalized);
-      docFrame.src = normalized;
-    }
-    function removeSelectedChat() {
-      const url = chatSelector.value;
-      if (!url) return;
-      chats = chats.filter(c => c.url !== url);
-      saveChats(); rebuildSelector();
-      if (chatSelector.options.length > 0) {
-        chatSelector.selectedIndex = 0;
-        docFrame.src = chatSelector.value;
-        localStorage.setItem("nb_lastChatUrl", chatSelector.value);
-      } else {
-        docFrame.removeAttribute("src");
-        localStorage.removeItem("nb_lastChatUrl");
-      }
-    }
-    function normalizeDocUrl(url) {
-      try {
-        const u = new URL(url);
-        // Accept typical forms:
-        // https://docs.google.com/document/d/{docId}/edit
-        // https://docs.google.com/document/d/{docId}/edit?usp=sharing
-        // If it's a share link to view, force /edit for collaborative typing
-        const parts = u.pathname.split("/");
-        const dIdx = parts.indexOf("d");
-        if (u.hostname.includes("docs.google.com") && dIdx >= 0 && parts[dIdx+1]) {
-          return `https://${u.hostname}/document/d/${parts[dIdx+1]}/edit`;
-        }
-        return url;
-      } catch {
-        return null;
-      }
-    }
-    function extractDocId(url) {
-      try {
-        const u = new URL(url);
-        const parts = u.pathname.split("/");
-        const dIdx = parts.indexOf("d");
-        return dIdx >= 0 ? parts[dIdx+1] : null;
-      } catch {
-        return null;
-      }
-    }
-
-    // Populate selector from saved
-    rebuildSelector();
-
-    // Wire events
-    addFriendBtn.onclick = () => {
-      const url = friendDocInput.value.trim();
-      if (!url) return;
-      addChat("Friend Chat", url, "friend");
-      friendDocInput.value = "";
-    };
-    createGroupBtn.onclick = () => {
-      const name = groupNameInput.value.trim();
-      const url = groupDocInput.value.trim();
-      if (!name || !url) return;
-      addChat(`Group: ${name}`, url, "group");
-      groupNameInput.value = "";
-      groupDocInput.value = "";
-    };
-    chatSelector.onchange = () => {
-      const url = chatSelector.value;
-      if (!url) return;
-      docFrame.src = url;
-      localStorage.setItem("nb_lastChatUrl", url);
-    };
-    openDocBtn.onclick = () => {
-      const url = chatSelector.value;
-      if (!url) return;
-      window.open(url, "_blank");
-    };
-    removeChatBtn.onclick = removeSelectedChat;
-    clearChatsBtn.onclick = () => {
-      if (!confirm("Remove all saved chats?")) return;
-      chats = [];
-      saveChats();
-      rebuildSelector();
-      docFrame.removeAttribute("src");
-      localStorage.removeItem("nb_lastChatUrl");
-    };
-  }
 </script>
 </body>
 </html>
