@@ -21,24 +21,11 @@
   }
   @keyframes gradientBG { 0%{background-position:0% 50%;} 50%{background-position:100% 50%;} 100%{background-position:0% 50%;} }
 
-  /* Video background (only for default theme) */
-  #bgVideo {
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    object-fit: cover;
-    z-index: -2; /* behind canvases and content */
-    display: none; /* hidden unless default theme is active */
-  }
-  body[data-theme="default"] #bgVideo { display: block; }
-  body[data-theme="default"] {
-    background: none; /* remove gradient when video is active */
-    animation: none;
-  }
-
   /* Theme variants backgrounds */
   body[data-theme="default"] {
-    /* background removed to reveal video */
+    background: linear-gradient(135deg,#000000,#210535,#430d4b,#051427,#7b337d,#c874b2,#f5d5e0);
+    background-size: 400% 400%;
+    animation: gradientBG 20s ease infinite;
   }
   body[data-theme="dark"] { background: radial-gradient(circle at center, #0a0a0a, #1a1a2e, #16213e); animation: none; }
   body[data-theme="light"] { background: linear-gradient(135deg,#e0f7fa,#b2ebf2,#80deea,#4dd0e1,#26c6da); animation: none; }
@@ -87,6 +74,15 @@
     content:""; position:fixed; inset:0; z-index:-1;
     box-shadow: inset 0 0 250px rgba(0, 20, 60, 0.6);
   }
+  #customBackground {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  object-fit: cover;
+  width: 100%;
+  height: 100%;
+  display: none;
+}
 
   h1 { font-size:48px; margin:24px 0 8px; font-weight:900; letter-spacing:2px;
        text-shadow:0 0 12px #fff,0 0 24px #ff00ff,0 0 36px #00ffff; transition: all 300ms ease; }
@@ -195,11 +191,6 @@
 </head>
 <body>
 
-<!-- Background video (only shows in default theme) -->
-<video id="bgVideo" autoplay muted loop playsinline>
-  <source src="https://www.pexels.com/video/mixture-of-different-colors-of-ink-in-liquid-2421545/" type="video/mp4">
-</video>
-
 <!-- THEME CANVASES (each theme has its own set) -->
 <!-- Cosmic theme -->
 <canvas id="cosmic-stars" class="theme-layer"></canvas>
@@ -241,8 +232,12 @@
     <option value="light">Light Theme</option>
     <option value="retro">Retro</option>
     <option value="ocean">Ocean</option>
+    <option value="custom">Custom Theme</option>
   </select>
 </div>
+  <label for="customFile">Upload PNG or MP4:</label>
+<input type="file" id="customFile" accept="image/png,video/mp4">
+
 
 <input id="searchBar" type="text" placeholder="Search games..." />
 <button id="randomGameBtn" class="primary">Random game</button>
@@ -266,7 +261,7 @@
     <button data-url="https://8ball-pool.pages.dev/file/">   <span class="label">8 Ball Pool</span><span class="fav-star">☆</span> </button>
     <button data-url="https://script.google.com/a/macros/sd215.net/s/AKfycby6NyBKr5sGwJ5lGXSwGEq6DlpfC794H6eMj8ymQmt7T5l8_4Tk9yIXJhwNjzoifKIx/exec">   <span class="label">Abandoned</span><span class="fav-star">☆</span> </button>
     <button data-url="https://script.google.com/a/macros/sd215.net/s/AKfycby2JlS7zrXUMn8a63H8TXhROmx6rrUrwjDAIGXeNrfRaoihzYLALwKC7MDq7fuzxWIoCw/exec">   <span class="label">Age Of War</span><span class="fav-star">☆</span> </button>
-    <button data-url="https://script.google.com/a/macros/sd215.net/s/AKfycb-iGW7nI13rNOfHdtQvt2g3ik1HWzcZyr0US6sz_OeR2eN0flkKMyKjvvXVPs49WKE/exec">   <span class="label">Age Of War 2</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://script.google.com/a/macros/sd215.net/s/AKfycby-iGW7nI13rNOfHdtQvt2g3ik1HWzcZyr0US6sz_OeR2eN0flkKMyKjvvXVPs49WKE/exec">   <span class="label">Age Of War 2</span><span class="fav-star">☆</span> </button>
     <button data-url="https://script.google.com/a/macros/sd215.net/s/AKfycb30nrhMSPeJyfgpPQfLsVVhOxjjyErkIsQtoYAzPkRYenYcSBpVyMcOwXy_flMCjFm/exec">   <span class="label">Angry Birds</span><span class="fav-star">☆</span> </button>
     <button data-url="https://appel.pages.dev/">   <span class="label">Appel</span><span class="fav-star">☆</span> </button>
     <button data-url="https://archero.pages.dev/play/archero">   <span class="label">Archero</span><span class="fav-star">☆</span> </button>
@@ -1643,6 +1638,44 @@ document.addEventListener("DOMContentLoaded", () => {
     Object.values(oceanLayers).forEach(L=> L && L.ctx.clearRect(0,0,L.c.width,L.c.height));
   }
 })();
+</script>
+  <script>
+const themeSelect = document.getElementById('themeSelect');
+const customFile = document.getElementById('customFile');
+let customBgElement = null;
+
+themeSelect.addEventListener('change', () => {
+  if (themeSelect.value === 'custom') {
+    document.body.setAttribute('data-theme','custom');
+    document.getElementById('customBackground').style.display = 'block';
+  } else {
+    document.getElementById('customBackground').style.display = 'none';
+  }
+});
+
+customFile.addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  // Remove old element if exists
+  if (customBgElement) customBgElement.remove();
+
+  const url = URL.createObjectURL(file);
+
+  if (file.type === 'image/png') {
+    customBgElement = document.createElement('img');
+    customBgElement.src = url;
+  } else if (file.type === 'video/mp4') {
+    customBgElement = document.createElement('video');
+    customBgElement.src = url;
+    customBgElement.autoplay = true;
+    customBgElement.loop = true;
+    customBgElement.muted = true;
+  }
+
+  customBgElement.id = 'customBackground';
+  document.body.appendChild(customBgElement);
+});
 </script>
 </body>
 </html>
