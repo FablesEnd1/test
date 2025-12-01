@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Not Boredom</title>
 
+<!-- Retro font for the Retro Arcade theme -->
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 
 <style>
@@ -12,26 +13,32 @@
   html, body { height: 100%; margin: 0; overflow-x: hidden; }
   body {
     font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    background: linear-gradient(135deg,#000000,#210535,#430d4b,#051427,#7b337d,#c874b2,#f5d5e0,#530f1e,#a44322,#f8bc04,#062c43,#054569,#5591a9,#9ccddc,#ced7e0,#7a27ac,#7844e8,#253fb1,#c33764,#1d2671);
+    background-size: 400% 400%;
+    animation: gradientBG 20s ease infinite;
     color: #fff; text-align: center; position: relative;
     transition: background 600ms ease, color 300ms ease;
   }
+  @keyframes gradientBG { 0%{background-position:0% 50%;} 50%{background-position:100% 50%;} 100%{background-position:0% 50%;} }
 
-  /* Video background */
+  /* Video background (only for default theme) */
   #bgVideo {
     position: fixed;
     top: 0; left: 0;
     width: 100%; height: 100%;
     object-fit: cover;
-    z-index: -2;
-    display: none; /* hidden by default */
+    z-index: -2; /* behind canvases and content */
+    display: none; /* hidden unless default theme is active */
   }
   body[data-theme="default"] #bgVideo { display: block; }
-
-  @keyframes gradientBG { 0%{background-position:0% 50%;} 50%{background-position:100% 50%;} 100%{background-position:0% 50%;} }
+  body[data-theme="default"] {
+    background: none; /* remove gradient when video is active */
+    animation: none;
+  }
 
   /* Theme variants backgrounds */
   body[data-theme="default"] {
-    background: none; /* disable gradient when video is active */
+    /* background removed to reveal video */
   }
   body[data-theme="dark"] { background: radial-gradient(circle at center, #0a0a0a, #1a1a2e, #16213e); animation: none; }
   body[data-theme="light"] { background: linear-gradient(135deg,#e0f7fa,#b2ebf2,#80deea,#4dd0e1,#26c6da); animation: none; }
@@ -42,64 +49,185 @@
   canvas.theme-layer { position: fixed; inset: 0; z-index: -1; pointer-events: none; }
   .hidden { display: none; }
 
-  /* Visibility per theme */
+  /* Visibility per theme (only show relevant canvases) */
+  /* Cosmic default */
+  #cosmic-stars, #cosmic-nebula, #cosmic-effects { display: none; }
   body[data-theme="default"] #cosmic-stars,
   body[data-theme="default"] #cosmic-nebula,
   body[data-theme="default"] #cosmic-effects { display: block; }
 
+  /* Dark nebula */
+  #dark-dust, #dark-pulsar, #dark-arcs { display: none; }
   body[data-theme="dark"] #dark-dust,
   body[data-theme="dark"] #dark-pulsar,
   body[data-theme="dark"] #dark-arcs { display: block; }
 
+  /* Aurora light */
+  #aurora-ribbons, #aurora-sparkles, #aurora-mist { display: none; }
   body[data-theme="light"] #aurora-ribbons,
   body[data-theme="light"] #aurora-sparkles,
   body[data-theme="light"] #aurora-mist { display: block; }
 
+  /* Retro arcade */
+  #retro-grid, #retro-sprites, #retro-overlay { display: none; }
   body[data-theme="retro"] #retro-grid,
   body[data-theme="retro"] #retro-sprites,
-  body[data-theme="retro-overlay { display: block; }
+  body[data-theme="retro"] #retro-overlay { display: block; }
 
+  /* Ocean */
+  #ocean-back, #ocean-caustics, #ocean-life, #ocean-foreground { display: none; }
   body[data-theme="ocean"] #ocean-back,
   body[data-theme="ocean"] #ocean-caustics,
   body[data-theme="ocean"] #ocean-life,
   body[data-theme="ocean"] #ocean-foreground { display: block; }
+  #ocean-back, #ocean-caustics, #ocean-life, #ocean-foreground {
+    filter: saturate(1.05) contrast(1.05);
+  }
+  body[data-theme="ocean"]::after {
+    content:""; position:fixed; inset:0; z-index:-1;
+    box-shadow: inset 0 0 250px rgba(0, 20, 60, 0.6);
+  }
 
-  /* ... keep your existing UI styles here ... */
+  h1 { font-size:48px; margin:24px 0 8px; font-weight:900; letter-spacing:2px;
+       text-shadow:0 0 12px #fff,0 0 24px #ff00ff,0 0 36px #00ffff; transition: all 300ms ease; }
+
+  .cog { position:fixed; top:15px; right:15px; font-size:24px; cursor:pointer; color:#eee; z-index:10000; }
+  .settings { position:fixed; top:50px; right:15px; background:#222; padding:15px; border-radius:8px;
+              display:none; box-shadow:0 0 10px rgba(0,0,0,0.5); z-index:10000; min-width: 280px; text-align: left; transition: all 300ms ease; }
+  .settings input, .settings select { padding:8px; width:250px; border-radius:5px; border:none; margin-bottom:10px; }
+  .settings p, .settings label { font-size:13px; color:#aaa; margin:0 0 8px; display:block; }
+
+  #searchBar,.primary { width:var(--btn-w); padding:var(--btn-pad); font-size:20px; border-radius:12px; margin:12px auto; display:block; transition: all 250ms ease; }
+  #searchBar { border:2px solid #fff; background:rgba(255,255,255,0.15); color:#fff; outline:none; }
+  #searchBar::placeholder { color:#e8e8e8; }
+  #searchBar:focus { background:rgba(255,255,255,0.25); box-shadow:0 0 0 3px rgba(255,255,255,0.25); }
+
+  .primary { border:none; cursor:pointer; color:#fff; background:linear-gradient(135deg,#24c6dc,#514a9d);
+             box-shadow:0 6px 16px rgba(0,0,0,0.35); transition:transform .15s ease, filter .2s ease, box-shadow 200ms ease; }
+  .primary:hover { transform:translateY(-2px); filter:brightness(1.05); }
+  .primary:active { transform:translateY(0); }
+
+  #buttonContainer { display:flex; flex-direction:column; align-items:center; gap:14px; padding:20px 0 40px; }
+  #buttonContainer button { width:var(--btn-w); padding:var(--btn-pad); font-size:22px; border-radius:12px; border:none; cursor:pointer;
+    color:white; background:linear-gradient(135deg,#ff512f,#dd2476);
+    box-shadow:0 6px 16px rgba(0,0,0,0.35); transition:transform .15s ease, filter .2s ease, box-shadow 200ms ease;
+    display:flex; align-items:center; justify-content:center; gap:8px; }
+  #buttonContainer button:hover { transform:translateY(-2px); filter:brightness(1.05); }
+  #buttonContainer button:active { transform:translateY(0); }
+
+  .fav-star { font-size:22px; cursor:pointer; transition:transform .15s ease; }
+  .fav-star:hover { transform:scale(1.2); }
+
+  #gameArea { width:100%; height:100vh; display:none; position:relative; }
+  #gameFrame { border:none; width:100%; height:100%; }
+  #backBtn { position:absolute; top:10px; left:10px; padding:8px 16px; background:linear-gradient(135deg,#24c6dc,#514a9d);
+    color:#fff; border:none; border-radius:6px; cursor:pointer; z-index:10001; }
+
+  #loginOverlay { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; flex-direction: column;
+    background: rgba(0,0,0,0.85); color: #fff; z-index: 99999; transition: all 300ms ease; }
+  #loginOverlay h2 { font-size: 28px; text-shadow: 0 0 12px #fff,0 0 24px #ff00ff,0 0 36px #00ffff; margin-bottom: 12px; }
+  #loginOverlay input { padding: 10px; border-radius: 6px; border: none; width: 250px; margin: 10px; }
+  #loginOverlay button { padding: 10px 20px; border: none; border-radius: 6px; background: linear-gradient(135deg,#24c6dc,#514a9d);
+    color: #fff; cursor: pointer; box-shadow: 0 6px 16px rgba(0,0,0,0.35); }
+
+  /* Theme-specific UI skins */
+  /* Default Cosmic Gradient */
+  body[data-theme="default"] h1 { color: #fff; text-shadow: 0 0 12px #fff,0 0 24px #ff00ff,0 0 36px #00ffff; }
+  body[data-theme="default"] .primary,
+  body[data-theme="default"] #buttonContainer button {
+    background: linear-gradient(135deg,#24c6dc,#514a9d);
+    color: #fff; box-shadow: 0 6px 16px rgba(0,0,0,0.35);
+  }
+  body[data-theme="default"] #buttonContainer button:hover { box-shadow: 0 0 12px #ff00ff, 0 0 24px #00ffff; }
+
+  /* Dark Nebula */
+  body[data-theme="dark"] h1 { color: #eee; text-shadow: 0 0 12px #444,0 0 24px #888; }
+  body[data-theme="dark"] .primary,
+  body[data-theme="dark"] #buttonContainer button {
+    background: linear-gradient(135deg,#111,#333);
+    color: #eee; box-shadow: 0 6px 16px rgba(0,0,0,0.7);
+  }
+  body[data-theme="dark"] .settings { background: #111; border: 1px solid #444; color: #ccc; }
+  body[data-theme="dark"] #loginOverlay { background: rgba(0,0,0,0.95); color: #ccc; }
+  body[data-theme="dark"] #buttonContainer button:hover { filter: brightness(1.2); text-shadow: 0 0 6px #888; }
+
+  /* Aurora Light */
+  body[data-theme="light"] h1 { color: #222; text-shadow: 0 0 12px #a1ffce,0 0 24px #faffd1; }
+  body[data-theme="light"] .primary,
+  body[data-theme="light"] #buttonContainer button {
+    background: linear-gradient(135deg,#a1ffce,#faffd1);
+    color: #222; box-shadow: 0 6px 16px rgba(0,0,0,0.25); border: 2px solid #a1ffce;
+  }
+  body[data-theme="light"] .settings { background: #fff; border: 1px solid #ccc; color: #222; }
+  body[data-theme="light"] #loginOverlay { background: rgba(255,255,255,0.9); color: #222; }
+
+  /* Retro Arcade */
+  body[data-theme="retro"] h1 {
+    font-family: "Press Start 2P", monospace; text-transform: uppercase;
+    color: #0ff; text-shadow: 0 0 12px #ff0080,0 0 24px #00ffe0;
+  }
+  body[data-theme="retro"] .primary,
+  body[data-theme="retro"] #buttonContainer button {
+    background: linear-gradient(135deg,#ff0080,#00ffe0);
+    color: #fff; font-family: "Press Start 2P", monospace; text-transform: uppercase;
+    box-shadow: 0 0 12px #ff0080, 0 0 24px #00ffe0;
+  }
+  body[data-theme="retro"] .settings {
+    background: #111; border: 2px solid #ff0080; color: #0ff; font-family: "Press Start 2P", monospace;
+  }
+  body[data-theme="retro"] #loginOverlay { background: #000; color: #0ff; font-family: "Press Start 2P", monospace; }
+  body[data-theme="retro"]::before {
+    content:""; position:fixed; inset:0; z-index:-1;
+    background: repeating-linear-gradient(rgba(255,255,255,0.05), rgba(255,255,255,0.05) 2px, transparent 2px, transparent 4px);
+    pointer-events:none;
+  }
+
+  /* Ocean */
+  body[data-theme="ocean"] h1 { color: #cfe9ff; text-shadow: 0 0 12px #39cccc, 0 0 24px #0074d9; }
+  body[data-theme="ocean"] .primary,
+  body[data-theme="ocean"] #buttonContainer button {
+    background: linear-gradient(135deg,#0074d9,#39cccc);
+    color: #e0f7fa; box-shadow: 0 6px 16px rgba(0,50,100,0.5);
+  }
+  body[data-theme="ocean"] .settings { background: rgba(0,40,80,0.9); border: 2px solid #39cccc; color: #cfe9ff; }
+  body[data-theme="ocean"] #loginOverlay { background: rgba(0,40,80,0.95); color: #cfe9ff; }
 </style>
 </head>
-<body data-theme="default">
+<body>
 
 <!-- Background video (only shows in default theme) -->
 <video id="bgVideo" autoplay muted loop playsinline>
-  <source src="https://player.vimeo.com/external/2421545.sd.mp4?s=3f7f9d3f3f9d3f9d3f9d3f9d3f9d3f9d3f9d3f9d&profile_id=164&oauth2_token_id=57447761" type="video/mp4">
+  <source src="https://player.vimeo.com/external/2421545.sd.mp4" type="video/mp4">
 </video>
 
-<!-- THEME CANVASES -->
+<!-- THEME CANVASES (each theme has its own set) -->
+<!-- Cosmic theme -->
 <canvas id="cosmic-stars" class="theme-layer"></canvas>
 <canvas id="cosmic-nebula" class="theme-layer"></canvas>
 <canvas id="cosmic-effects" class="theme-layer"></canvas>
 
+<!-- Dark nebula theme -->
 <canvas id="dark-dust" class="theme-layer"></canvas>
 <canvas id="dark-pulsar" class="theme-layer"></canvas>
 <canvas id="dark-arcs" class="theme-layer"></canvas>
 
+<!-- Aurora light theme -->
 <canvas id="aurora-ribbons" class="theme-layer"></canvas>
 <canvas id="aurora-sparkles" class="theme-layer"></canvas>
 <canvas id="aurora-mist" class="theme-layer"></canvas>
 
+<!-- Retro arcade theme -->
 <canvas id="retro-grid" class="theme-layer"></canvas>
 <canvas id="retro-sprites" class="theme-layer"></canvas>
 <canvas id="retro-overlay" class="theme-layer"></canvas>
 
+<!-- Ocean theme -->
 <canvas id="ocean-back" class="theme-layer"></canvas>
 <canvas id="ocean-caustics" class="theme-layer"></canvas>
 <canvas id="ocean-life" class="theme-layer"></canvas>
 <canvas id="ocean-foreground" class="theme-layer"></canvas>
 
 <h1>Not Boredom</h1>
-
-<!-- keep your cog/settings, search bar, buttons, etc. -->
-
 
 <div class="cog" id="cog">&#9881;</div>
 <div class="settings" id="settingsPanel">
@@ -138,7 +266,7 @@
     <button data-url="https://8ball-pool.pages.dev/file/">   <span class="label">8 Ball Pool</span><span class="fav-star">☆</span> </button>
     <button data-url="https://script.google.com/a/macros/sd215.net/s/AKfycby6NyBKr5sGwJ5lGXSwGEq6DlpfC794H6eMj8ymQmt7T5l8_4Tk9yIXJhwNjzoifKIx/exec">   <span class="label">Abandoned</span><span class="fav-star">☆</span> </button>
     <button data-url="https://script.google.com/a/macros/sd215.net/s/AKfycby2JlS7zrXUMn8a63H8TXhROmx6rrUrwjDAIGXeNrfRaoihzYLALwKC7MDq7fuzxWIoCw/exec">   <span class="label">Age Of War</span><span class="fav-star">☆</span> </button>
-    <button data-url="https://script.google.com/a/macros/sd215.net/s/AKfycby-iGW7nI13rNOfHdtQvt2g3ik1HWzcZyr0US6sz_OeR2eN0flkKMyKjvvXVPs49WKE/exec">   <span class="label">Age Of War 2</span><span class="fav-star">☆</span> </button>
+    <button data-url="https://script.google.com/a/macros/sd215.net/s/AKfycb-iGW7nI13rNOfHdtQvt2g3ik1HWzcZyr0US6sz_OeR2eN0flkKMyKjvvXVPs49WKE/exec">   <span class="label">Age Of War 2</span><span class="fav-star">☆</span> </button>
     <button data-url="https://script.google.com/a/macros/sd215.net/s/AKfycb30nrhMSPeJyfgpPQfLsVVhOxjjyErkIsQtoYAzPkRYenYcSBpVyMcOwXy_flMCjFm/exec">   <span class="label">Angry Birds</span><span class="fav-star">☆</span> </button>
     <button data-url="https://appel.pages.dev/">   <span class="label">Appel</span><span class="fav-star">☆</span> </button>
     <button data-url="https://archero.pages.dev/play/archero">   <span class="label">Archero</span><span class="fav-star">☆</span> </button>
